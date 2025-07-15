@@ -43,24 +43,54 @@ async function startSock() {
 
   // Message handler
   sock.ev.on('messages.upsert', async (m) => {
-    const msg = m.messages[0];
-    if (!msg.message || msg.key.fromMe) return;
+  const msg = m.messages[0];
+  if (!msg.message || msg.key.fromMe) return;
 
-    const from = msg.key.remoteJid;
-    const body = msg.message.conversation || msg.message.extendedTextMessage?.text;
+  const from = msg.key.remoteJid;
+  const body = msg.message.conversation || msg.message.extendedTextMessage?.text;
+  if (!body) return;
 
-    if (!body) return;
+  const lower = body.toLowerCase().trim();
 
-    const lower = body.toLowerCase();
+  // 📍 Only respond to specific keywords
+  switch (lower) {
+    case 'hi':
+    case 'hello':
+      await sock.sendMessage(from, {
+        text: 'Hey 👋, I’m your assistant. Type "menu" to see what I can do.'
+      });
+      break;
 
-    if (lower === 'hi') {
-      await sock.sendMessage(from, { text: 'Hey 👋,' });
-    } else if (lower.includes('exiels')) {
-      await sock.sendMessage(from, { text: 'Exiels dey run this world 🌩' });
-    } else {
-      await sock.sendMessage(from, { text: 'You said: ${body} 🤖' });
-    }
-  });
-}
+    case 'menu':
+      await sock.sendMessage(from, {
+        text: `📋 *Menu*:
+1. hi – Greet the bot
+2. about exiels – Learn about the creator
+3. help – Get usage instructions`
+      });
+      break;
+
+    case 'about exiels':
+      await sock.sendMessage(from, {
+        text: `👤 *Exiels1*: The mind behind this bot. Dark visionary. Tech rebel. Building stormy brilliance in code.`
+      });
+      break;
+
+    case 'help':
+      await sock.sendMessage(from, {
+        text: `🛠️ *How to Use This Bot*:
+- Type "menu" to see available commands
+- Type "hi" to greet
+- Type "about exiels" to learn more
+That's it. Keep it clean.`
+      });
+      break;
+
+    default:
+      // ❌ Stay silent for unknown messages
+      console.log(`Ignored: "${body}" from ${from}`);
+      break;
+  }
+});
 
 startSock();
