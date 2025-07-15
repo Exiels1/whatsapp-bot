@@ -93,4 +93,6 @@ That's it. Keep it clean.`
   }
 });
 
-startSock();
+} // ← this is the one you forgot
+
+startSock(); // ← this one runs the function after it’s defined
