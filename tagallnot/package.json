@@ -1,0 +1,13 @@
+{
+  "name": "tagallnot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index2.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index2.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
