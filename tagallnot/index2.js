@@ -1,39 +1,56 @@
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
-import { Boom } from '@hapi/boom'
+import makeWASocket from '@whiskeysockets/baileys';
+import {
+  useMultiFileAuthState,
+  DisconnectReason,
+  fetchLatestBaileysVersion
+} from '@whiskeysockets/baileys';
+
+import * as fs from 'fs';
+import * as path from 'path';
+import P from 'pino';
 
 const startSock = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState('auth')
+  const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+  const { version } = await fetchLatestBaileysVersion();
+
   const sock = makeWASocket({
+    version,
+    printQRInTerminal: true,
     auth: state,
-    printQRInTerminal: true
-  })
+    logger: P({ level: 'silent' })
+  });
 
-  sock.ev.on('messages.upsert', async ({ messages }) => {
-    const msg = messages[0]
-    if (!msg.message || msg.key.fromMe || !msg.key.remoteJid.endsWith('@g.us')) return
+  sock.ev.on('creds.update', saveCreds);
 
-    const text = msg.message.conversation || msg.message.extendedTextMessage?.text
-    if (text?.toLowerCase() === 'tagall') {
-      const groupMetadata = await sock.groupMetadata(msg.key.remoteJid)
-      const participants = groupMetadata.participants.map(p => p.id)
-      const mentions = participants
-
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: '🔊 Tagging everyone:\n' + participants.map(p => `@${p.split('@')[0]}`).join(' '),
-        mentions
-      })
-    }
-  })
-
-  sock.ev.on('creds.update', saveCreds)
-  sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
+  sock.ev.on('connection.update', (update) => {
+    const { connection, lastDisconnect } = update;
     if (connection === 'close') {
-      const code = (lastDisconnect?.error)?.output?.statusCode
-      if (code !== DisconnectReason.loggedOut) startSock()
-      else console.log('Logged out ❌')
+      const reason = lastDisconnect?.error?.output?.statusCode;
+      console.log('Disconnected. Reason:', reason);
+      if (reason !== DisconnectReason.loggedOut) {
+        startSock(); // reconnect
+      }
+    } else if (connection === 'open') {
+      console.log('✅ Connected to WhatsApp as', sock.user.name);
     }
-    console.log('Connection update:', connection)
-  })
-}
+  });
 
-startSock()
+  sock.ev.on('messages.upsert', async (m) => {
+    const msg = m.messages[0];
+    if (!msg.message || msg.key.fromMe) return;
+
+    const sender = msg.key.remoteJid;
+    const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text;
+
+    if (messageContent?.toLowerCase() === 'tagall') {
+      const metadata = await sock.groupMetadata(sender);
+      const participants = metadata.participants.map(p => p.id);
+      const mentions = participants;
+
+      const tagMsg = participants.map(p => `@${p.split('@')[0]}`).join(' ');
+      await sock.sendMessage(sender, { text: tagMsg, mentions });
+    }
+  });
+};
+
+startSock();

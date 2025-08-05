@@ -8,11 +8,23 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "��#\u0000 \u0000w\u0000h\u0000a\u0000t\u0000s\u0000a\u0000p\u0000p\u0000-\u0000b\u0000o\u0000t\u0000\r\u0000 \u0000",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.18",
+    "chalk": "^5.4.1",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "node-cache": "^5.1.2",
+    "pino": "^9.7.0",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Exiels1/whatsapp-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Exiels1/whatsapp-bot/issues"
+  },
+  "homepage": "https://github.com/Exiels1/whatsapp-bot#readme"
 }

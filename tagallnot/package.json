@@ -1,13 +1,14 @@
 {
   "name": "tagallnot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple WhatsApp tag-all bot using Baileys",
   "main": "index2.js",
   "type": "module",
   "scripts": {
     "start": "node index2.js"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "pino": "^8.0.0"
+  }
 }
